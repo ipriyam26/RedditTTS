@@ -8,6 +8,7 @@ import os
 import praw
 from datetime import datetime
 import random
+import env
 
 class Image_Processor:
     
@@ -179,51 +180,21 @@ def make_video(name:str):
         i=i+1
         
     os.system(f"ffmpeg -f concat -safe 0 -i list.txt -c copy videos/{name}.mp4")
+    
     # os.system(f"rm list.txt && rm audio.txt && rm image.txt")
+    
+    os.system("rm list.txt")
+    for image in glob("test*.png"):
+        os.system(f"rm {image}")
+    for audio in glob("test*.mp3"):
+        os.system(f"rm {audio}")   
+    for vid in glob("test*.mp4"):
+        os.system(f"rm {vid}")
 
 
     # Function to get the title of the post
 
-    
-    
-#Function to upload video to youtube using youtube data api
-# def upload_video(video_name:str,title:str):
-#     description = "Subscribe for more funny and awesome videos thought the day #shorts #reddit"
-#     title = title + "#shorts"
-#     key = "funny,reddit,fun,cool,askreddit"
-#     os.system(f'python /Users/ipriyam26/Programing/Reddit TTS/upload_video.py --file="{vide_name}.mp4" --title="{title}" --description="{description}" --key="{key}" --category="22" --privacy="public"')
-#     os.system(f"rm {video_name}.mp4")
-    # python /Users/ipriyam26/Programing/Reddit TTS/upload_video.py --file="output.mp4"
-#                        --title="New SUper Funny video"
-#                        --description="check out now and like and subscribe"
-#                        --keywords="funny,cute,laugh"
-#                        --category="22"
-#                        --privacyStatus="private"        
-
-# im = Image.open("back.png")
-# ttf = glob("*.ttf")
-# profile = Image.open("profile3.png")
-# process = Image_Processor()
-# title = "What is one thing COVID has taken away that we’ll never get back?"
-# # process.add_title(im,title,"ipriyam26","3 years","21.0k").show()
-# process.make_title(image=im,title=title,user_name="ipriyam26",time="3 years",comments="21.0k")
-
-# plan = Image_Processor()
-# im= Image.open("back.png")
-# im = process.base_image(im,profile,"TheJimDim",time = "3 years")
-# # im = process.add_multiline_text(im,text , (255, 0, 0),font=ttf[1],position=(130,65))
-# text = "I had this hot roommate that did those princess parties things where you dress up as a Disney Princess and go to birthday parties.  \n\nOne day I come home and I’m headed to my room and she’s about to head out to a princess party. She steps out in full Snow White gear, wig, ruby red lipstick, etc. She turns around and points to her back.\n“Hey can you help me with this zipper?”  I didn’t think I’d be turned on by a Disney princess. And Snow White of all people. \n\nRunner up, I’ve never been into the whole… dom/sub thing. Until I was with a chick who was into it and I didn’t realize til I told her to do something while in bed and she replied with a yes, sir."
-
-# text = text.replace("’","'").replace("\n","")
-# tt = title.split(" ")
-# vide_name = "-".join(tt)
-# pp = plan.adding_text_line_by_line(im,text,"12k","102")
-
-# text_to_speech(text.split("."))
-# make_video(vide_name)
-# print(pp)
-# sk = "I shower once a week. Sometimes I go longer. I also have"
-# print(len(sk))
+   
 
 
 # Function to convert time to maximum unit of time possible
@@ -243,11 +214,11 @@ def time(time):
 
 
 #API CALLS
-reddit = praw.Reddit(client_id='k_ZnJdAJyM-NRNjOJhfJJw',
-                     client_secret='zr3sjutLDNyEi6gFSd4eZ-gqAb9nUw',
-                     user_agent='android:com.example.myredditapp:v1.0.0 (by /u/Fantastic-Apartment8)',
-                     username='Fantastic-Apartment8',
-                     password='mcsx007A')
+reddit = praw.Reddit(client_id=env.CLIENT_ID,
+                     client_secret=env.CLIENT_SECRET,
+                     user_agent=env.USER_AGENT,
+                     username=env.USERNAME,
+                     password=env.PASSWORD)
                      
 print(reddit.read_only)
 subreddit = reddit.subreddit('AskReddit')
@@ -323,7 +294,7 @@ while k<s:
         background = Image.open("back.png")
         profile_picture = Image.open("profile3.png")
         base_image = video_main.base_image(background,profile_picture,comment_author,com_time)
-        text = str(comments[j]["Body"]).replace("\n","").replace("’","'")
+        text = str(comments[j]["Body"]).replace("\n","").replace("’","'").replace("“","\"").replace("/"," ")
         image_making = video_main.adding_text_line_by_line(base_image,text,likes,"750")
         text_to_speech(text.split("."))
         title = title.replace("’","").replace("'","").replace('"','')
@@ -334,12 +305,6 @@ while k<s:
         make_video(vide_name)
         k=k+1 
         j+=1
-        os.system("rm list.txt")
-        for image in glob("test*.png"):
-            os.system(f"rm {image}")
-        for audio in glob("test*.mp3"):
-            os.system(f"rm {audio}")   
-        for vid in glob("test*.mp4"):
-            os.system(f"rm {vid}")       
+       
     comments.clear()
        
