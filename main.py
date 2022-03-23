@@ -9,6 +9,7 @@ import praw
 from datetime import datetime
 import random
 import env
+import sel
 
 class Image_Processor:
     
@@ -18,7 +19,6 @@ class Image_Processor:
     #Function to make title png & audio
     def make_title(self,image,title,user_name,time,comments):
         
-        print(title)
         make_title_audio(title)
         self.add_title(image=image,title=title,user_name=user_name,time=time,comments=comments)
         # return image
@@ -40,15 +40,15 @@ class Image_Processor:
         
         # return image
     
-    #Function to make text to speech uing pyttsx3 
+    #Function to make text to speech using pyttsx3 
 
-    # Fuction to draw a line in an image
+    # Function to draw a line in an image
     def draw_line(self,image, height):
         draw = ImageDraw.Draw(image)
         draw.line((65, 390, 65, 390+height),width=3, fill=(157,157,163))
         return image 
     
-    # Fuction to add text to an image
+    # Function to add text to an image
     def add_text(self,image, text, color,font,position,size):
         draw = ImageDraw.Draw(image)
         ff = ImageFont.truetype(font, size=size)
@@ -62,14 +62,13 @@ class Image_Processor:
         font_width,font_height = draw.textsize(text, font=ff)
         return (image,font_width,font_height)
         
-    # Fuction to add multiline text to an image
+    # Function to add multiline text to an image
     def add_multiline_text(self,image, text, color,font,position):
         draw = ImageDraw.Draw(image)
         font = ImageFont.truetype(font, size=35)
         draw.text(position, text, fill=color, font=font)
         # draw.multiline_textbbox(position, text, font=font)
         font_width,font_height = draw.textsize(text, font=font)
-        print(font_width,font_height)
         return (image,font_width,font_height)
 
 
@@ -105,12 +104,11 @@ class Image_Processor:
         sen =""
         pan = []
         wrapper = textwrap.TextWrapper(width=50)
-        while(i<len(split)):
+        while (i<len(split)):
             
             # if i==len(split):
             #     image = self.add_image()
-            word_list = wrapper.wrap(text=split[i].strip()+".")
-            # print(f"{i} = Word List => {word_list}")
+            word_list = wrapper.wrap(text=f'{split[i].strip()}.')
             pan.append(word_list)
             ss = "\n".join(word_list)
             sen = sen + "\n"+ ss
@@ -138,27 +136,20 @@ def make_title_audio(title):
     engine.save_to_file(title, "test0.mp3")
     engine.runAndWait()
             
-# Fuction to convert text to speech using google text to speech
+# Function to convert text to speech using google text to speech
 def text_to_speech(texts):
-    i=1
-    print(texts)
-    print(len(texts))
     engine = pyttsx3.init()
     voice = engine.getProperty('voices')[7]
     engine.setProperty('voice', voice.id)
-    for text in texts:
-        print(f"Sending text to speech {text}")
+    for i, text in enumerate(texts, start=1):
         engine.save_to_file(text, f"test{i}.mp3")
-        print(f"Saved text to speech {text}")
-        i=i+1
     engine.runAndWait()
-    print("Done")
     
     
 
 # Function to join image to audio using ffmpeg
 def make_video(name:str):
-    # print(images)
+
     audios = glob("test*.mp3")
     images = glob("test*.png")
     j = random.randint(0,10)
@@ -166,28 +157,24 @@ def make_video(name:str):
     while i<len(audios):
         # os.system(f"echo 'file test{i}.mp3' >> audio.txt")
         # os.system(f"echo 'file test{i}.png' >> image.txt")
-        os.system(f"ffmpeg  -i test{i}.png -i test{i}.mp3 -c:a aac -vcodec libx264 test{i}.mp4")
-        # os.system(f"ffmpeg -loop 1 -i test{i}.png -i test{i}.mp3 -c:v libx264 -tune stillimage -c:a aac -b:a 192k -pix_fmt yuv420p -shortest text{i}.mp4")
-        i=i+1
-    print("Done")
-    print("compiling video")
+        os.system(f"ffmpeg -hide_banner -loglevel error -i test{i}.png -i test{i}.mp3 -c:a aac -vcodec libx264 test{i}.mp4")
+        i += 1
     videos = glob("test*.mp4")
     i=0
     videos.sort()
-    print(videos)
     while i<len(videos):
         os.system(f"echo 'file test{i}.mp4' >> list.txt")
-        i=i+1
-        
-    os.system(f"ffmpeg -f concat -safe 0 -i list.txt -c copy videos/{name}.mp4")
-    
+        i += 1
+
+    os.system(f"ffmpeg -hide_banner -loglevel error -f concat -safe 0 -i list.txt -c copy videos/{name}.mp4")
+
     # os.system(f"rm list.txt && rm audio.txt && rm image.txt")
     
     os.system("rm list.txt")
     for image in glob("test*.png"):
         os.system(f"rm {image}")
     for audio in glob("test*.mp3"):
-        os.system(f"rm {audio}")   
+        os.system(f"rm {audio}")
     for vid in glob("test*.mp4"):
         os.system(f"rm {vid}")
 
@@ -219,29 +206,26 @@ reddit = praw.Reddit(client_id=env.CLIENT_ID,
                      user_agent=env.USER_AGENT,
                      username=env.USERNAME,
                      password=env.PASSWORD)
-                     
-print(reddit.read_only)
+
 subreddit = reddit.subreddit('AskReddit')
 # subreddit.top(limit=10)
 submissions = subreddit.hot(limit=100)
-s = int(input("How many videos do you want to make? "))
+s=60
 k=0
 subIds=[submission.id for submission in submissions]
-print(len(subIds))
 os.system("rm -rf videos")
 os.system("mkdir videos")
-
+total_videos = []
 while k<s:
     comments=[]
     p=1
     f=0
     for subID in subIds:
         submission = reddit.submission(id=subID)
-        print(submission.title)
-        
+
         top_comments = list(submission.comments)
         for top_comment in top_comments:
-            
+
             try:
                 if(len(top_comment.body)>600 and len(top_comment.body)<900):
                     f=1
@@ -255,29 +239,25 @@ while k<s:
                         "comment_likes": top_comment.score,
                         "comment_time": top_comment.created_utc,
                     }
-                    print(comment)
                     comments.append(comment)
-                    
+
             except: 
-                print("NO MORE IN THIS SUBMISSION")
                 p+=1
-                
+
         subIds = subIds[p:]        
-                      
+
         if(f==1):
             break   
-    
+
     j=0
     while j<len(comments):
        
         #time block
         current_time = datetime.now().timestamp()
         submission_time = float(comments[j]["sub_time"])
-        print(current_time-submission_time)
         comment_time = float(comments[j]["comment_time"])
         sub_obj = (current_time - submission_time)
         com_obj = (current_time - comment_time)
-        print(sub_obj)
         sub_time = time(sub_obj)
         com_time = time(com_obj)
         #time block
@@ -297,14 +277,20 @@ while k<s:
         text = str(comments[j]["Body"]).replace("\n","").replace("’","'").replace("“","\"").replace("/"," ")
         image_making = video_main.adding_text_line_by_line(base_image,text,likes,"750")
         text_to_speech(text.split("."))
-        title = title.replace("’","").replace("'","").replace('"','')
+        title = title.replace("’","").replace("'","").replace('"','').replace("/"," ")
         tt = title.split(" ")
-        tt.append(f"{j}")
-        tt.append("#short-#shorts")
+        tt.extend((f"{j}", "#short-#shorts"))
         vide_name = "-".join(tt)
         make_video(vide_name)
-        k=k+1 
+        total_videos.append(vide_name)
+        k=k+1
         j+=1
-       
+        os.system("clear")
+        print(f"Total Videos Made = {k}")
+        
+
     comments.clear()
+
+sel.upload()
+
        
