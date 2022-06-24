@@ -16,7 +16,7 @@ import glob
 def submitted(uploaded_videos, path, gave_error):
     uploaded_videos.append(path)
     print_status(len(uploaded_videos), len(gave_error))
-    time.sleep(1300)
+    time.sleep(800)
 
 def print_status( total_uploaded,  total_errors):
     os.system("clear")
@@ -104,7 +104,7 @@ def upload():
                     except:
                         pass
         except:
-            time.sleep(1300)
+            time.sleep(800)
 
     driver.close()
     os.system("reddit")

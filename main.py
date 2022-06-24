@@ -126,7 +126,12 @@ class Image_Processor:
             
 
 
-
+def sensor(title: str)-> str:
+    title = title.replace("fuck","f**k")
+    title = title.replace("pussy","p***y")
+    title = title.replace("ass","a**s")
+    return title
+    
 
 def make_title_audio(title):
     title = str(title)
@@ -181,7 +186,7 @@ def make_video(name:str):
 
     # Function to get the title of the post
 
-   
+ 
 
 
 # Function to convert time to maximum unit of time possible
@@ -210,7 +215,7 @@ reddit = praw.Reddit(client_id=env.CLIENT_ID,
 subreddit = reddit.subreddit('AskReddit')
 # subreddit.top(limit=10)
 submissions = subreddit.hot(limit=100)
-s=60
+s=10
 k=0
 subIds=[submission.id for submission in submissions]
 os.system("rm -rf videos")
@@ -241,7 +246,7 @@ while k<s:
                     }
                     comments.append(comment)
 
-            except: 
+            except Exception:
                 p+=1
 
         subIds = subIds[p:]        
@@ -251,7 +256,7 @@ while k<s:
 
     j=0
     while j<len(comments):
-       
+
         #time block
         current_time = datetime.now().timestamp()
         submission_time = float(comments[j]["sub_time"])
@@ -278,6 +283,7 @@ while k<s:
         image_making = video_main.adding_text_line_by_line(base_image,text,likes,"750")
         text_to_speech(text.split("."))
         title = title.replace("’","").replace("'","").replace('"','').replace("/"," ")
+        title = sensor(title)
         tt = title.split(" ")
         tt.extend((f"{j}", "#short-#shorts"))
         vide_name = "-".join(tt)
@@ -286,8 +292,8 @@ while k<s:
         k=k+1
         j+=1
         os.system("clear")
-        print(f"Total Videos Made = {k}")
-        
+        print(f"Total Videos Made ={k}")
+
 
     comments.clear()
 
